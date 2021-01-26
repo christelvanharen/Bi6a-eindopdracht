@@ -3,6 +3,7 @@ import javax.swing.filechooser.FileSystemView;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.zip.GZIPInputStream;
 
 class bestanden {
 
@@ -40,21 +41,25 @@ class bestanden {
         }
     }
     public static void hashmap() throws NullPointerException {
-        HashMap<String, variant_zoeken> zoekenHashMap = new HashMap();
+        HashMap<String, variant_zoeken> zoekenHashMap = new HashMap<>();
+        String bestand = "variant_summary.txt.gz";
         try {
-            String bestand = "/home/christel/IdeaProjects/Bi6a-eindopdracht/variant_summary.txt";
             BufferedReader reader =
-                    new BufferedReader(new FileReader(bestand));
+                    new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(bestand))));
             String line;
             while ((line = reader.readLine()) != null) {
-//                System.out.println(line);
                 String[] plek = line.split("\t");
-//                zoekenHashMap.put((plek[18]+plek[30]),
-//                        new variant_zoeken());
+                Integer allelID = Integer.valueOf(plek[0]);
+                String type = plek[1];
+                Integer positie = Integer.valueOf(plek[30]);
+                Integer pathogeniciteit = Integer.valueOf(plek[6]);
+                Integer genID = Integer.valueOf(plek[3]);
+                zoekenHashMap.put(allelID, type, positie,
+                        pathogeniciteit, genID);
+                System.out.println(zoekenHashMap);
             }
             System.out.println("Het bestand " + bestand + " is " +
                     "correct ingelezen.");
-
             reader.close();
         } catch (IOException e) {
             System.out.println("Het bestand is " +
@@ -68,7 +73,7 @@ class bestanden {
         try {
             System.out.println("Selecteer een bestand voor ouder 1:");
             File ouder1 =
-                    new File(Objects.requireNonNull(fileSelecter()));
+                    new File(Objects.requireNonNull(bestanden_kiezen()));
             String file_ouder1 = ouder1.getName();
             System.out.println("Het geselecteerde bestand van ouder 1" +
                     " is: " + file_ouder1);
@@ -76,7 +81,7 @@ class bestanden {
 
             System.out.println("Selecteer een bestand voor ouder 2:");
             File ouder2 =
-                    new File(Objects.requireNonNull(fileSelecter()));
+                    new File(Objects.requireNonNull(bestanden_kiezen()));
             String file_ouder2 = ouder2.getName();
             System.out.println("Het geselecteerde bestand van ouder 2" +
                     " is: " + file_ouder2);
@@ -118,7 +123,7 @@ class bestanden {
         return null;
     }
 
-    public static String fileSelecter() {
+    public static String bestanden_kiezen() {
         JFileChooser filechooser = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
         int returnValue = filechooser.showOpenDialog(null);
 
@@ -126,16 +131,13 @@ class bestanden {
             File selectedFile = filechooser.getSelectedFile();
             String filelocation = selectedFile.getAbsolutePath();
             return filelocation;
-
         } else if (returnValue == JFileChooser.CANCEL_OPTION || returnValue == JFileChooser.ABORT) {
             System.out.println("Het programma is afgebroken, probeer " +
                     "het opnieuw.");
-            System.exit(0);
-
         } else {
             System.out.println("Het bestand kan niet worden " +
                     "geaccepteerd. Probeer het opnieuw.");
-            fileSelecter();
+            bestanden_kiezen();
         }
         return null;
     }
@@ -146,18 +148,17 @@ class bestanden {
 
 class variant_zoeken extends bestanden{
 
+    private int alleleID;  //plek 0
+    private String type; //plek 1
+    private int position;  //plek 30
+    private int pathogenicity;  //plek 6
+    private int geneID;  //plek 3
+    private String alternativeAllele;  //plek 22
+    private String disease;  //15
+    private String referenceAllele;  //plek 21
+    private String chromosome;  //plek 18
 
-    private int alleleID;
-    private String type;
-    private int position;
-    private int pathogenicity;
-    private int geneID;
-    private String alternativeAllele;
-    private String disease;
-    private String referenceAllele;
-    private String chromosome;
-
-//    public int getAlleleID() {
+//    public int getAlleleID() {  //plek 0
 //
 //    }
 
