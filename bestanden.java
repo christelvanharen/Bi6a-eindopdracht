@@ -11,7 +11,6 @@ class bestanden {
         md5checker();
         arraylist();
         SNP_bestanden();
-//        info_bestand();
     }
 
     /**
@@ -173,12 +172,6 @@ class bestanden {
     }
 
 
-//    private static void ziekte_zoeken(String ouder1_id, String ouder2_id,
-//                                      ArrayList<String> arrayList_ouder1, ArrayList<String> arrayList_ouder2) {
-//
-//    }
-
-
     public static String bestanden_kiezen() {
         JFileChooser filechooser = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
         int returnValue = filechooser.showOpenDialog(null);
@@ -197,9 +190,6 @@ class bestanden {
         }
         return null;
     }
-//    public static void info_bestand() bestanden_arraylist (String pathwway) throws IOException {
-//        System.out.println(lijst);
-//    }
 }
 
 class variant_zoeken extends bestanden{
