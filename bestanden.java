@@ -1,20 +1,22 @@
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 import java.io.*;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.zip.GZIPInputStream;
 
 class bestanden {
 
     public static void main(String[] args) {
         md5checker();
-        hashmap();
+        arraylist();
         SNP_bestanden();
 //        info_bestand();
     }
 
-
+    /**
+     * Functie om de MD5 te runnen via de terminal
+     */
     public static void md5checker() {
         try {
             String md5sum = "md5sum variant_summary.txt.gz";
@@ -25,8 +27,8 @@ class bestanden {
             BufferedReader reader_cat = new BufferedReader(new InputStreamReader(proc_cat.getInputStream()));
             String line_md5;
             String line_cat;
-            System.out.println("Controle of de bestanden overeenkomen" +
-                    " met behulp van MD5:");
+            System.out.println("Controle of de bestanden " +
+                    "goed zijn overgekomen door middel van MD5:");
             while ((line_md5 = reader_md5.readLine()) != null) {
                 System.out.println(line_md5);
             }
@@ -36,92 +38,146 @@ class bestanden {
             proc_md5.waitFor();
             proc_cat.waitFor();
 
+            // Functie om te kijken of de md5 overeenkomen of niet
+            // Hier moet nog aan gewerkt worden
+
+//            ArrayList<String> gz = new ArrayList<>();
+//            Scanner scannergz = new Scanner(line_cat);
+//            while (scannergz.hasNextLine()) {
+//                String data_gz = scannergz.nextLine();
+//                gz.add(data_gz);
+//                System.out.println(gz);
+//            }
+
+
         } catch (IOException | InterruptedException | NullPointerException e) {
             e.printStackTrace();
         }
     }
-    public static void hashmap() throws NullPointerException {
-        HashMap<String, variant_zoeken> zoekenHashMap = new HashMap<>();
+    public static void arraylist() throws NullPointerException {
         String bestand = "variant_summary.txt.gz";
+        // Een gezipt bestand inlezen en splitten op de tab
         try {
             BufferedReader reader =
                     new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(bestand))));
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] plek = line.split("\t");
-                Integer allelID = Integer.valueOf(plek[0]);
+
+                // De juiste informatie uit de lijst halen
+                String chromosome = plek[18];
+                String position = plek[31];
+                String alleleID = plek[0];
                 String type = plek[1];
-                Integer positie = Integer.valueOf(plek[30]);
-                Integer pathogeniciteit = Integer.valueOf(plek[6]);
-                Integer genID = Integer.valueOf(plek[3]);
-                zoekenHashMap.put(allelID, type, positie,
-                        pathogeniciteit, genID);
-                System.out.println(zoekenHashMap);
+                String pathogenicity = plek[7];
+                String geneID = plek[3];
+                String alternateAllele = plek[32];
+                String referenceAllele = plek[33];
+                String disease = plek[13];
+
+                // De informatie toevoegen aan een ArrayList
+                ArrayList<String> alle_info = new ArrayList<>();
+
+                alle_info.add(chromosome);
+                alle_info.add(position);
+                alle_info.add(alleleID);
+                alle_info.add(type);
+                alle_info.add(pathogenicity);
+                alle_info.add(geneID);
+                alle_info.add(alternateAllele);
+                alle_info.add(referenceAllele);
+                alle_info.add(disease);
+
+//                System.out.println(alle_info);
             }
-            System.out.println("Het bestand " + bestand + " is " +
+            System.out.println("\nHet bestand " + bestand + " is " +
                     "correct ingelezen.");
             reader.close();
-        } catch (IOException e) {
-            System.out.println("Het bestand is " +
-                    "niet correct ingelezen.");
+        } catch (IOException | NumberFormatException e) {
+            System.out.println("\nHet bestand " + bestand + " is " +
+                    "incorrect ingelezen.");
             e.printStackTrace();
         }
     }
-    public static void SNP_bestanden(){
-        System.out.println("\n" + "Selecteer alleen 23andme " +
-                "bestanden!");
+    public static void SNP_bestanden() throws NullPointerException {
+        System.out.println("\n* Er worden alleen 23andme " +
+                "bestanden van ouders geaccepteerd! *\n");
+//        ArrayList<String> lijst_ouder1 = new ArrayList<>();
+//        ArrayList<String> lijst_ouder2 = new ArrayList<>();
         try {
-            System.out.println("Selecteer een bestand voor ouder 1:");
-            File ouder1 =
-                    new File(Objects.requireNonNull(bestanden_kiezen()));
+            // Het bestand van ouder 1 inlezen
+            System.out.println("Selecteer een bestand voor ouder 1.");
+            File ouder1 = new File(bestanden_kiezen());
+            Scanner scanner1 = new Scanner(ouder1);
+            while (scanner1.hasNextLine()) {
+                String data_ouder1 = scanner1.nextLine();
+//                System.out.println(data_ouder1);
+
+            }
             String file_ouder1 = ouder1.getName();
             System.out.println("Het geselecteerde bestand van ouder 1" +
                     " is: " + file_ouder1);
-            String ouder1_ID = file_ouder1.split("\\.")[0];
 
-            System.out.println("Selecteer een bestand voor ouder 2:");
-            File ouder2 =
-                    new File(Objects.requireNonNull(bestanden_kiezen()));
+            // Controleren of er ook echt een 23andme bestand is
+            // ingevoerd
+            String ouder1_ID = file_ouder1.split("\\.")[1];
+            if (ouder1_ID.equals("23andme")) {
+                System.out.println("Het bestand van ouder 1 is " +
+                        "inderdaad een 23andme bestand.");
+            } else {
+                System.out.println("Dit bestand van ouder 1 is geen " +
+                        "23andme bestand. Probeer het opnieuw.");
+            }
+
+
+            // Het bestand van ouder 2 inlezen
+            System.out.println("\nSelecteer een bestand voor ouder 2.");
+            File ouder2 = new File(bestanden_kiezen());
+            Scanner scanner2 = new Scanner(ouder1);
+            while (scanner2.hasNextLine()) {
+                String data_ouder2 = scanner2.nextLine();
+//                System.out.println(data_ouder2);
+            }
             String file_ouder2 = ouder2.getName();
             System.out.println("Het geselecteerde bestand van ouder 2" +
                     " is: " + file_ouder2);
-            String ouder2_ID = file_ouder2.split("\\.")[0];
 
-            if (ouder1.equals(ouder2)){
-                System.out.println("Er is 2 keer hetzelfde bestand " +
-                        "gebruikt. Probeer het opnieuw en selecteer 2" +
-                        " verschillende bestanden.");
+            // Controleren of er ook echt een 23andme bestand is
+            // ingevoerd
+            String ouder2_ID = file_ouder2.split("\\.")[1];
+            if (ouder2_ID.equals("23andme")) {
+                System.out.println("Het bestand van ouder 2 is " +
+                        "inderdaad een 23andme bestand.");
             } else {
-                System.out.println("De bestanden worden nu " +
-                        "geanalyseerd.");
-//                ArrayList<String> hashmap_ouder1 =
-//                        (ArrayList<String>) Objects.requireNonNull(bestand_hashmap(ouder1.getAbsolutePath()));
-//                ArrayList<String> hashmap_ouder2 =
-//                        (ArrayList<String>) Objects.requireNonNull(bestand_hashmap(ouder2.getAbsolutePath()));
-//                if (hashmap_ouder1.isEmpty() && hashmap_ouder2.isEmpty()){
-//                    System.out.println("Er zijn geen overeenkomstige " +
-//                            "mutaties gevonden");
-//                } else {
-//                    System.out.println("Er zijn overeenkomstige " +
-//                            "mutaties gevonden");
-////                    ziekte_zoeken(ouder1_ID, ouder2_ID,
-////                            hashmap_ouder1, hashmap_ouder2);
-//                }
+                System.out.println("Het bestand van ouder 2 is geen " +
+                        "23andme bestand. Probeer het opnieuw.");
+            }
+
+            // Kijken of het bestand niet vaker wordt gebruikt dan 1
+            // keer.
+            if (ouder1.equals(ouder2)){
+                System.out.println("\nEr wordt 2 keer hetzelfde " +
+                        "23andme bestand gebruikt. Probeer het " +
+                        "opnieuw en selecteer 2 verschillende 23andme" +
+                        " bestanden.");
+            } else if ((ouder2_ID.equals("23andme")) || ((ouder1_ID.equals("23andme")))) {
+                System.out.println("\nEen van de bestanden is geen " +
+                        "23andme bestand. Probeer het opnieuw.");
+            } else {  // Bestanden kunnen nu geanalyseerd worden
+                System.out.println("\nDe bestanden worden nu " +
+                        "geanalyseerd...");
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+
 //    private static void ziekte_zoeken(String ouder1_id, String ouder2_id,
 //                                      ArrayList<String> arrayList_ouder1, ArrayList<String> arrayList_ouder2) {
 //
 //    }
 
-    private static Object bestand_hashmap(String absolutePath) {
-        System.out.println("boe");
-        return null;
-    }
 
     public static String bestanden_kiezen() {
         JFileChooser filechooser = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
@@ -148,19 +204,16 @@ class bestanden {
 
 class variant_zoeken extends bestanden{
 
-    private int alleleID;  //plek 0
-    private String type; //plek 1
-    private int position;  //plek 30
-    private int pathogenicity;  //plek 6
-    private int geneID;  //plek 3
-    private String alternativeAllele;  //plek 22
-    private String disease;  //15
-    private String referenceAllele;  //plek 21
-    private String chromosome;  //plek 18
+    private int alleleID;
+    private String type;
+    private int position;
+    private int pathogenicity;
+    private int geneID;
+    private String alternativeAllele;
+    private String disease;
+    private String referenceAllele;
+    private String chromosome;
 
-//    public int getAlleleID() {  //plek 0
-//
-//    }
 
 
 }
