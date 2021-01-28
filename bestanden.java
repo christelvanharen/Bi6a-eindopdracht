@@ -12,11 +12,11 @@ import java.util.zip.GZIPInputStream;
 
 class bestanden {
 
+
     public static void main(String[] args) {
         md5checker();
-        arraylist();
-        SNP_bestanden();
     }
+
 
     /**
      * Functie om de MD5 te runnen via de terminal
@@ -45,6 +45,7 @@ class bestanden {
             if ((Objects.equals(line_md5, line_cat))) {
                 System.out.println("De MD5 hashcodes komen overeen. " +
                         "De bestanden zijn juist overgekomen.");
+                hashmap();
             } else {
                 System.out.println("* De MD5 hashcodes komen niet " +
                         "overeen. De bestanden zijn niet juist " +
@@ -59,80 +60,50 @@ class bestanden {
      *
      * @throws NullPointerException
      */
-    public static void arraylist() throws NullPointerException {
+    public static void hashmap() throws NullPointerException {
         String bestand = "variant_summary.txt.gz";
-        // Een gezipt bestand inlezen en splitten op de tab
+        // Een gezipt bestand inlezen en splitten op de tab en er een
+        // Hashmap van maken.
         try {
             BufferedReader reader =
                     new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(bestand))));
+            HashMap<String, ziekte_variant> variantHashMap =
+                    new HashMap<>();
             String line;
+            String firstline = reader.readLine();
+            firstline = null;
+
             while ((line = reader.readLine()) != null) {
                 String[] plek = line.split("\t");
 
-                // De juiste informatie uit de lijst halen
-                String chromosome = plek[18];
-                String position = plek[31];
-                String alleleID = plek[0];
-                String type = plek[1];
-                String pathogenicity = plek[7];
-                String geneID = plek[3];
-                String alternateAllele = plek[32];
-                String referenceAllele = plek[33];
-                String disease = plek[13];
-
-                // De informatie toevoegen aan een ArrayList
-                ArrayList<String> alle_info = new ArrayList<>();
-
-                alle_info.add(chromosome);
-                alle_info.add(position);
-                alle_info.add(alleleID);
-                alle_info.add(type);
-                alle_info.add(pathogenicity);
-                alle_info.add(geneID);
-                alle_info.add(alternateAllele);
-                alle_info.add(referenceAllele);
-                alle_info.add(disease);
-
-//                System.out.println(alle_info);
-
+                variantHashMap.put((plek[18] + plek[31] + plek[32] + plek[33]),
+                        new ziekte_variant(Integer.parseInt(plek[0]), plek[1],
+                                Integer.parseInt(plek[31]), Integer.parseInt(plek[7]),
+                                Integer.parseInt(plek[3]), plek[32],
+                                plek[33], plek[13], plek[18]));
+//                System.out.println(variantHashMap);
             }
             System.out.println("\nHet bestand " + bestand + " is " +
                     "correct ingelezen.");
+            SNP_bestanden(variantHashMap);
             reader.close();
         } catch (IOException | NumberFormatException e) {
             System.out.println("\n* Het bestand " + bestand + " is " +
                     "incorrect ingelezen. *");
             e.printStackTrace();
+            System.exit(0);
         }
     }
 
-    /**
-     *
-     * @throws NullPointerException
-     */
-    public static void SNP_bestanden() throws NullPointerException {
+
+    public static void SNP_bestanden(HashMap<String, ziekte_variant> variantHashMap) throws NullPointerException {
         System.out.println("\n* Er worden alleen 23andme " +
                 "bestanden van ouders geaccepteerd! *\n");
-        ArrayList<String> lijst_ouder1 = new ArrayList<>();
-        ArrayList<String> lijst_ouder2 = new ArrayList<>();
 
         try {
             // Het bestand van ouder 1 inlezen
             System.out.println("Selecteer een bestand voor ouder 1.");
             File ouder1 = new File(Objects.requireNonNull(bestanden_kiezen()));
-            Scanner scanner1 = new Scanner(ouder1);
-            String data_ouder1 = null;
-            String data1 = null;
-
-            while (scanner1.hasNextLine()) {
-                data_ouder1 = scanner1.nextLine();
-                if (!data_ouder1.startsWith("#")){
-                    data1 = Arrays.toString(data_ouder1.split("\t"));
-                    lijst_ouder1.add(data1);
-
-                }
-            }
-//            System.out.println(lijst_ouder1);
             String file_ouder1 = ouder1.getName();
             System.out.println("Het geselecteerde bestand van ouder 1" +
                     " is: " + file_ouder1);
@@ -146,24 +117,12 @@ class bestanden {
             } else {
                 System.out.println("* Dit bestand van ouder 1 is geen" +
                         " 23andme bestand. Probeer het opnieuw. *");
+                System.exit(0);
             }
-
 
             // Het bestand van ouder 2 inlezen
             System.out.println("\nSelecteer een bestand voor ouder 2.");
             File ouder2 = new File(Objects.requireNonNull(bestanden_kiezen()));
-            Scanner scanner2 = new Scanner(ouder2);
-            String data_ouder2 = null;
-            String data2 = null;
-
-            while (scanner2.hasNextLine()) {
-                data_ouder2 = scanner2.nextLine();
-                if (!data_ouder2.startsWith("#")){
-                    data2 = Arrays.toString(data_ouder2.split("\t"));
-                    lijst_ouder2.add(data2);
-                }
-            }
-//            System.out.println(lijst_ouder2);
             String file_ouder2 = ouder2.getName();
             System.out.println("Het geselecteerde bestand van ouder 2" +
                     " is: " + file_ouder2);
@@ -177,73 +136,107 @@ class bestanden {
             } else {
                 System.out.println("* Het bestand van ouder 2 is geen" +
                         " 23andme bestand. Probeer het opnieuw. *");
+                System.exit(0);
             }
 
-            // Kijken of het bestand niet vaker wordt gebruikt dan 1
-            // keer.
+            // Als 2 keer hetzelfde bestand wordt opgegeven, dan
+            // stopt het programma.
             if (ouder1.equals(ouder2)){
                 System.out.println("\n* Er wordt 2 keer hetzelfde " +
                         "23andme bestand gebruikt. Probeer het " +
                         "opnieuw en selecteer 2 verschillende 23andme" +
                         " bestanden. *");
+                System.exit(0);
             }
-//            else if ((ouder2_ID.equals("23andme")) || ((ouder1_ID.equals("23andme")))) {
-//                System.out.println("\nEen van de bestanden is geen " +
-//                        "23andme bestand. Probeer het opnieuw.");
-//            }
-            else {  // Bestanden kunnen nu geanalyseerd worden
+            // Bestanden kunnen nu geanalyseerd worden
+            else {
                 System.out.println("\nDe bestanden worden nu " +
                         "geanalyseerd...");
+                HashMap<String, String[]> hashmap_ouder1 =
+                        Objects.requireNonNull(bestanden_ouders(ouder1.getAbsolutePath()));
+                HashMap<String, String[]> hashmap_ouder2 =
+                        Objects.requireNonNull(bestanden_ouders(ouder2.getAbsolutePath()));
 
-//                System.out.println("Ouder 1:");
-                String nieuwe_rsid1 = null;
-                String nieuwe_nt1 = null;
-//                String info_ouder1 = null;
-                for (String lijst1 : lijst_ouder1) {
-//                    System.out.println(lijst1);
-                    String rsid1 = lijst1.split(",")[0];
-                    String nt_1 = lijst1.split(",")[3];
-                    nieuwe_rsid1 = rsid1.replaceAll("\\[", "");
-                    nieuwe_nt1 = nt_1.replaceAll("\\]", "");
-//                    info_ouder1 = "RSID: " + nieuwe_rsid1 + "\n" +
-//                            "Nucleotide die tot ziekte kan " +
-//                            "leiden:" + nieuwe_nt1;
-//                    System.out.println(info_ouder1);
+//                System.out.println("Hashmap ouder 1 komt overeen met " +
+//                        "ouder 2: " + hashmap_ouder1.keySet().retainAll(hashmap_ouder2.keySet()));
+//                System.out.println("Hashmap ouder 2 komt overeen met " +
+//                        "ouder 1: " + hashmap_ouder2.keySet().retainAll(hashmap_ouder1.keySet()));
+
+                if (hashmap_ouder1.isEmpty() && hashmap_ouder2.isEmpty()) {
+                    System.out.println("Er zijn geen mutaties " +
+                            "gevonden. Er is niks aan de hand.");
+                    System.exit(0);
+                } else {
+                    System.out.println("Er zijn mutaties gevonden. Er" +
+                            " wordt nu verder onderzoek gedaan...");
+                    verder_onderzoek(file_ouder1, hashmap_ouder1, file_ouder2,
+                            hashmap_ouder2, variantHashMap);
                 }
-                
-//                System.out.println("Ouder 2:");
-                String nieuwe_rsid2 = null;
-                String nieuwe_nt2 = null;
-//                String info_ouder2 = null;
-                for (String lijst2 : lijst_ouder2) {
-//                        System.out.println(lijst2);
-                    String rsid2 = lijst2.split(",")[0];
-                    String nt_2 = lijst2.split(",")[3];
-                    nieuwe_rsid2 = rsid2.replaceAll("\\[", "");
-                    nieuwe_nt2 = nt_2.replaceAll("\\]", "");
-//                    info_ouder2 = "RSID: " + nieuwe_rsid2 + "\n" +
-//                            "Nucleotide die tot ziekte kan " +
-//                            "leiden:" + nieuwe_nt2;
-//                    System.out.println(info_ouder2);
-                }
-
-                nieuwe_rsid1.compareTo(nieuwe_rsid2);
-                System.out.println("RSID: " + nieuwe_rsid2 + "\t" +
-                        "nucleotides: " + nieuwe_nt1 + "&" + nieuwe_nt2);
-//                System.out.println(nieuwe_rsid1);
-
-                
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    public static void verder_onderzoek(String file_ouder1, HashMap<String,
+            String[]> hashmap_ouder1, String file_ouder2, HashMap<String,
+            String[]> hashmap_ouder2, HashMap<String, ziekte_variant> variantHashMap){
+        try {
+            FileWriter bestand_schrijven = new FileWriter(file_ouder1 +
+                    "_vergeleken_met_" + file_ouder2 + ".txt");
+            bestand_schrijven.write("Ouder 1 en ouder 2 worden met elkaar " +
+                    "vergeleken:"+ "\n" + "Ouder 1: " + file_ouder1 +
+                    "\n" + "Ouder 2: " + file_ouder2 + "\n");
 
-    /**
-     *
-     * @return
-     */
+
+            for (Map.Entry<String, String[]> e : hashmap_ouder1.entrySet()) {
+                String[] data_ouder1 = e.getValue();
+//                System.out.println(key + "\t" + Arrays.toString(value));
+
+                String ouder_info = data_ouder1[1] + data_ouder1[2] + data_ouder1[3];
+
+                if (variantHashMap.containsKey(ouder_info)){
+                    ziekte_variant overeenkomst = variantHashMap.get(ouder_info);
+//                    System.out.println(overeenkomst);
+
+                    String[] data_ouder2 = null;
+                    data_ouder2 = hashmap_ouder2.get(data_ouder1[0]);
+//                    System.out.println(data_ouder2);
+
+                    bestand_schrijven.write(data_ouder1[0] + "\t" + (overeenkomst.getReferenceAllele() + overeenkomst.getAlternativeAllele()) + "\t" +
+                            overeenkomst.getChromosome() + "\t" + data_ouder1[3] + "\t" + data_ouder2[3] + "\t" +
+                            file_ouder1.split("\\.")[0] + "\t" + file_ouder2.split("\\.")[0] + "\n");
+                }
+            }
+
+            System.out.println("Het bestand is aangemaakt. " + file_ouder1
+                    + " is vergeleken met " + file_ouder2);
+            bestand_schrijven.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static HashMap<String, String[]> bestanden_ouders(String bestand) {
+        HashMap<String, String[]> ouders = new HashMap<>();
+        String line;
+        String[] regel;
+        try {
+            Scanner scanner = new Scanner(new File(bestand));
+            while (scanner.hasNextLine()) {
+                line = scanner.nextLine();
+                if (!line.startsWith("#")){
+                    regel = line.split("\t");
+                    ouders.put(regel[0], regel);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return ouders;
+    }
+
     public static String bestanden_kiezen() {
         JFileChooser bestand_kiezen =
                 new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
@@ -265,7 +258,7 @@ class bestanden {
     }
 }
 
-class alle_info implements Comparable<alle_info> {
+class ziekte_variant implements Comparable<ziekte_variant> {
 
     private int alleleID;
     private String type;
@@ -277,7 +270,7 @@ class alle_info implements Comparable<alle_info> {
     private String referenceAllele;
     private String chromosome;
 
-    public alle_info(int alleleID, String type, int position,
+    public ziekte_variant(int alleleID, String type, int position,
                           int pathogenicity, int geneID,
                           String alternativeAllele, String disease,
                           String referenceAllele, String chromosome){
@@ -364,15 +357,15 @@ class alle_info implements Comparable<alle_info> {
         this.chromosome = chromosome;
     }
 
-    public int compareTo (alle_info a) {
+    public int compareTo (ziekte_variant a) {
         return this.getChromosome().compareTo(a.getChromosome());
     }
 
     public String toString (){
-        return "Chromosome: " + chromosome + "Position: " + position + "Type: " + type + "Pathogeniciteit: " + pathogenicity +
-                "geneID: " + geneID + "AlternativeAllele: " + alternativeAllele + "disease: " + disease +
+        return "Chromosome: " + chromosome + "\t" + "Position: " + position +
+                "\t" + "Type: " + type + "\t" + "Pathogeniciteit: " + pathogenicity
+                + "\t" + "geneID: " + geneID + "\t" + "AlternativeAllele: " +
+                alternativeAllele + "\t" + "disease: " + disease + "\t" +
                 "referenceAllele: " + referenceAllele;
     }
-
 }
-
